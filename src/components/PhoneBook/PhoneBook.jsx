@@ -1,26 +1,37 @@
 import { Component } from 'react';
 import { nanoid } from 'nanoid';
 
+import ContactForm from './ContactForm';
+import Filter from './Filter';
+import ContactList from './ContactList';
+
 import s from './phoneBook.module.css';
 
 class PhoneBook extends Component {
   state = {
-    contacts: [],
+    contacts: [
+      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+    ],
     filter: '',
-    name: '',
-    number: '',
   };
 
-  handleChange = ({ target }) => {
-    const { name, value } = target;
-    this.setState({
-      [name]: value,
-    });
-  };
+  // ? add contacts to state with input value
+  addContacts = data => {
+    // error due to duplicated contacts
+    const { contacts } = this.state;
+    const isDuplicated = contacts.find(item => item.name === data.name);
+    if (isDuplicated) {
+      alert(`${data.name} is already in your Phonebook`);
+      return;
+    }
 
-  addContacts = e => {
-    e.preventDefault();
-    this.setState(({ name, number, contacts }) => {
+    //? add new  contact logic
+    this.setState(prevState => {
+      const { contacts } = prevState;
+      const { name, number } = data;
       const newContacts = {
         id: nanoid(),
         name,
@@ -34,6 +45,30 @@ class PhoneBook extends Component {
     });
   };
 
+  //? change state due to user action
+  changeFilter = e => {
+    this.setState({
+      filter: e.target.value,
+    });
+  };
+
+  //? returned contacts to render
+  getFilteredContacts() {
+    const { contacts, filter } = this.state;
+    if (!filter) {
+      return contacts;
+    }
+
+    const filterRequest = filter.toLowerCase();
+    const filteredContacts = contacts.filter(({ name }) => {
+      const res = name.toLowerCase().includes(filterRequest);
+      return res;
+    });
+
+    return filteredContacts;
+  }
+
+  //? delete contacts from state
   deleteContacts = id => {
     this.setState(({ contacts }) => ({
       contacts: contacts.filter(item => item.id !== id),
@@ -41,65 +76,22 @@ class PhoneBook extends Component {
   };
 
   render() {
-    const { name, number, contacts } = this.state;
-    const elements = contacts.map(({ name, id, number }) => (
-      <li className={s.item} key={id}>
-        {name}: {number}
-        <button
-          type="button"
-          className={s.btn}
-          onClick={() => this.deleteContacts(id)}
-        >
-          Delete
-        </button>
-      </li>
-    ));
+    const { filter } = this.state;
+    const filteredContacts = this.getFilteredContacts();
     return (
-      <>
-        <div className={s.container}>
-          <h2 className={s.title}>Phonebook</h2>
-          <form className={s.box} onSubmit={this.addContacts}>
-            <label htmlFor="name" className={s.text}>
-              Contact's Name
-            </label>
-            <input
-              value={name}
-              type="text"
-              name="name"
-              id="name"
-              placeholder="Enter Name"
-              pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-              title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-              required
-              onChange={this.handleChange}
-              className={s.input}
-            />
-            <label htmlFor="tel" className={s.text}>
-              Contact's Number
-            </label>
-            <input
-              value={number}
-              type="tel"
-              name="number"
-              id="tel"
-              placeholder="Enter Number"
-              pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-              title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-              required
-              onChange={this.handleChange}
-              className={s.input}
-            />
+      <div className={s.container}>
+        <h1 className={s.title}>Phonebook</h1>
+        <ContactForm onSubmit={this.addContacts} />
 
-            <button type="submit" className={s.btn}>
-              Add Contact
-            </button>
-          </form>
-        </div>
-        <div className={s.container}>
-          <h2 className={s.title}>Contacts</h2>
-          <ul className={s.contacts}>{elements}</ul>
-        </div>
-      </>
+        <h2 className={s.title}>Contacts</h2>
+
+        <Filter onChange={this.changeFilter} filter={filter} />
+
+        <ContactList
+          contacts={filteredContacts}
+          deleteContacts={this.deleteContacts}
+        />
+      </div>
     );
   }
 }
