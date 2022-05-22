@@ -20,6 +20,7 @@ ContactList.defaultProps = {
 };
 
 ContactList.propTypes = {
+  deleteContacts: PropTypes.func.isRequired,
   contacts: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
