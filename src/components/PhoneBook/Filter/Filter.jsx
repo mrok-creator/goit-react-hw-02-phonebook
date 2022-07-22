@@ -6,7 +6,6 @@ function Filter({ onChange, filter }) {
   return (
     <>
       <label htmlFor="filter" className={s.text}>
-        {' '}
         Find by Name
       </label>
       <input
